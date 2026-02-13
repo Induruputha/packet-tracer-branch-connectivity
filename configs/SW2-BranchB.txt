@@ -1,0 +1,40 @@
+enable
+configure terminal
+
+hostname SW2-BranchB
+no ip domain-lookup
+service password-encryption
+
+enable secret Admin@123
+banner motd ^CUnauthorized access is prohibited.^C
+
+username admin privilege 15 secret Admin@123
+
+! Management IP (VLAN 1)
+interface vlan 1
+ ip address 192.168.20.2 255.255.255.0
+ no shutdown
+exit
+
+ip default-gateway 192.168.20.1
+
+! SSH
+ip domain-name branch.local
+crypto key generate rsa modulus 1024
+ip ssh version 2
+
+line console 0
+logging synchronous
+exec-timeout 10 0
+login local
+exit
+
+line vty 0 4
+transport input ssh
+logging synchronous
+exec-timeout 10 0
+login local
+exit
+
+end
+write memory
