@@ -1,0 +1,51 @@
+enable
+configure terminal
+
+hostname R2-BranchB
+no ip domain-lookup
+
+! ===== Security Basics =====
+enable secret Admin@123
+service password-encryption
+banner motd ^CUnauthorized access is prohibited.^C
+
+username admin privilege 15 secret Admin@123
+
+ip domain-name branch.local
+crypto key generate rsa modulus 1024
+ip ssh version 2
+
+line console 0
+logging synchronous
+exec-timeout 10 0
+login local
+exit
+
+line vty 0 4
+transport input ssh
+logging synchronous
+exec-timeout 10 0
+login local
+exit
+
+! ===== Interfaces =====
+
+! LAN Interface (to SW2)
+interface gigabitEthernet0/0
+ description Branch-B-LAN
+ ip address 192.168.20.1 255.255.255.0
+ no shutdown
+exit
+
+! WAN Interface (to R1)
+interface serial0/0/0
+ description WAN-to-R1
+ ip address 10.0.0.2 255.255.255.252
+ no shutdown
+exit
+
+! ===== Static Route to Branch A LAN =====
+ip route 192.168.10.0 255.255.255.0 10.0.0.1
+
+end
+write memory
